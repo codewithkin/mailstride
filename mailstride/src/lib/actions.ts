@@ -13,7 +13,6 @@ export async function authenticateWithEmail(formData: FormData) {
 
 export async function authenticateWithGoogle() {
   await signIn("google", {
-    redirect: true,
     callbackUrl: '/dashboard'
   })
 }
