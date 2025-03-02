@@ -46,18 +46,13 @@ export default function SignIn() {
     }
   }
 
-  async function onGoogleSignIn() {
-    setIsGoogleLoading(true)
+  async function onGoogleSubmit(formData: FormData) {
     try {
       await authenticateWithGoogle()
-      // No need to handle success case as it will redirect
     } catch (error) {
-      // Only log actual errors, not redirect "errors"
       if (error instanceof Error && error.message !== 'NEXT_REDIRECT') {
         console.error('Google sign in error:', error)
       }
-    } finally {
-      setIsGoogleLoading(false)
     }
   }
 
@@ -87,24 +82,27 @@ export default function SignIn() {
         </div>
 
         <div className="space-y-4">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={onGoogleSignIn}
-            disabled={isGoogleLoading}
-          >
-            {isGoogleLoading ? (
-              <div className="flex items-center gap-2">
-                <LoadingSpinner />
-                <span>Connecting to Google...</span>
-              </div>
-            ) : (
-              <>
-                <FcGoogle className="mr-2 h-5 w-5" />
-                Continue with Google
-              </>
-            )}
-          </Button>
+          <form action={onGoogleSubmit}>
+            <Button
+              type="submit"
+              variant="outline"
+              className="w-full"
+              disabled={isGoogleLoading}
+              onClick={() => setIsGoogleLoading(true)}
+            >
+              {isGoogleLoading ? (
+                <div className="flex items-center gap-2">
+                  <LoadingSpinner />
+                  <span>Connecting to Google...</span>
+                </div>
+              ) : (
+                <>
+                  <FcGoogle className="mr-2 h-5 w-5" />
+                  Continue with Google
+                </>
+              )}
+            </Button>
+          </form>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
