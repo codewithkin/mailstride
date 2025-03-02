@@ -1,7 +1,7 @@
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import NextAuth from "next-auth"
 import Resend from "next-auth/providers/resend"
-import GoogleProvider from "next-auth/providers/google"
+import Google from "next-auth/providers/google"
 import { prisma } from "./prisma"
 import { render } from '@react-email/render'
 import { AuthEmail } from "@/components/emails/auth-email"
@@ -43,7 +43,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       },
     }),
-    GoogleProvider({
+    Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
