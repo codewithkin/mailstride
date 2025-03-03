@@ -13,31 +13,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
+enum Plan {
+  FREE
+  PRO
+  BUSINESS
+  ENTERPRISE
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+enum EmailStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  FAILED
+}
+
+enum AutomationType {
+  WELCOME
+  DRIP
+  TRIGGER
+  SEQUENCE
 }
 
 model User {
@@ -46,8 +41,192 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  plan          Plan      @default(FREE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
   accounts      Account[]
   sessions      Session[]
+  publications  Publication[]
+}
+
+model Publication {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emails      Email[]
+  subscribers Subscriber[]
+  automations Automation[]
+
+  @@index([userId])
+}
+
+model Email {
+  id          String      @id @default(cuid())
+  subject     String
+  content     String      @db.Text
+  status      EmailStatus @default(DRAFT)
+  sentAt      DateTime?
+  scheduledFor DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  publicationId String
+  publication  Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  analytics    EmailAnalytics?
+  automationEmails AutomationEmail[]
+
+  @@index([publicationId])
+}
+
+model EmailAnalytics {
+  id          String   @id @default(cuid())
+  opens       Int      @default(0)
+  uniqueOpens Int      @default(0)
+  clicks      Int      @default(0)
+  uniqueClicks Int     @default(0)
+  bounces     Int      @default(0)
+  unsubscribes Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  emailId     String   @unique
+  email       Email    @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  clickEvents ClickEvent[]
+  openEvents  OpenEvent[]
+}
+
+model ClickEvent {
+  id          String   @id @default(cuid())
+  url         String
+  timestamp   DateTime @default(now())
+  
+  // Relations
+  analyticsId String
+  analytics   EmailAnalytics @relation(fields: [analyticsId], references: [id], onDelete: Cascade)
+  subscriberId String
+  subscriber  Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  @@index([analyticsId])
+  @@index([subscriberId])
+}
+
+model OpenEvent {
+  id          String   @id @default(cuid())
+  timestamp   DateTime @default(now())
+  
+  // Relations
+  analyticsId String
+  analytics   EmailAnalytics @relation(fields: [analyticsId], references: [id], onDelete: Cascade)
+  subscriberId String
+  subscriber  Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  @@index([analyticsId])
+  @@index([subscriberId])
+}
+
+model Subscriber {
+  id          String   @id @default(cuid())
+  email       String
+  name        String?
+  metadata    Json?    // For custom fields
+  subscribed  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  publicationId String
+  publication  Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  clickEvents  ClickEvent[]
+  openEvents   OpenEvent[]
+  tags         Tag[]
+
+  @@unique([email, publicationId])
+  @@index([publicationId])
+}
+
+model Tag {
+  id          String   @id @default(cuid())
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  subscribers Subscriber[]
+}
+
+model Automation {
+  id          String        @id @default(cuid())
+  name        String
+  type        AutomationType
+  active      Boolean       @default(true)
+  settings    Json          // For automation-specific settings
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  publicationId String
+  publication  Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  emails       AutomationEmail[]
+
+  @@index([publicationId])
+}
+
+model AutomationEmail {
+  id          String   @id @default(cuid())
+  delay       Int      // Delay in minutes
+  order       Int      // Order in sequence
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  automationId String
+  automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  emailId      String
+  email        Email      @relation(fields: [emailId], references: [id], onDelete: Cascade)
+
+  @@index([automationId])
+  @@index([emailId])
+}
+
+// NextAuth.js Models
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model VerificationToken {
