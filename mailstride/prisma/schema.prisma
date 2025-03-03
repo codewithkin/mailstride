@@ -55,7 +55,7 @@ model User {
   // Relations
   accounts      Account[]
   sessions      Session[]
-  ownedPublications Publication[]
+  ownedPublications Publication[] @relation("ownedPublications")
   publicationMembers PublicationMember[]
 }
 
@@ -70,7 +70,7 @@ model Publication {
 
   // Relations
   ownerId     String
-  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner       User     @relation("ownedPublications", fields: [ownerId], references: [id], onDelete: Cascade)
   members     PublicationMember[]
   emails      Email[]
   subscribers Subscriber[]

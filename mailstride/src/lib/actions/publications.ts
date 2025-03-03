@@ -15,24 +15,40 @@ export async function createPublication(formData: FormData) {
   const audience = formData.get('audience') as string
   const description = formData.get('description') as string | null
 
+  if (!name || !audience) {
+    throw new Error("Name and audience are required")
+  }
+
   // Generate a slug from the name
   const slug = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '')
 
+  const userId = session.user.id
+
   try {
+    // First create the publication
     const publication = await prisma.publication.create({
       data: {
         name,
         audience,
         description,
         slug,
-        ownerId: session.user.id,
+        ownerId: userId,
         members: {
           create: {
-            userId: session.user.id,
-            role: 'OWNER'
+            userId,
+            role: "OWNER"
+          }
+        }
+      },
+      include: {
+        members: true,
+        _count: {
+          select: {
+            subscribers: true,
+            emails: true
           }
         }
       }
@@ -42,6 +58,9 @@ export async function createPublication(formData: FormData) {
     return publication
   } catch (error) {
     console.error('Failed to create publication:', error)
+    if (error instanceof Error) {
+      throw new Error(error.message)
+    }
     throw new Error('Failed to create publication')
   }
 }
