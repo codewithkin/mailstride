@@ -70,3 +70,34 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Webkit browsers (Chrome, Safari, newer versions of Edge) */
+::-webkit-scrollbar {
+  width: 8px; /* Half of default 16px */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: linear-gradient(to bottom, #818cf8, #a855f7);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #6366f1, #9333ea);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin; /* "auto" or "thin" */
+  scrollbar-color: #818cf8 transparent;
+}
+
+/* For Firefox, we can't do gradients, so we'll use a solid color */
+@supports (-moz-appearance: none) {
+  * {
+    scrollbar-color: #9333ea transparent;
+  }
+}
