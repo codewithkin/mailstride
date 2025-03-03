@@ -64,6 +64,7 @@ model Publication {
   name        String
   description String?
   slug        String   @unique
+  audience    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
