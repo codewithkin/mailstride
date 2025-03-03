@@ -63,8 +63,7 @@ model Publication {
   id          String   @id @default(cuid())
   name        String
   description String?
-  slug        String   @unique // For nice URLs
-  audience    String?
+  slug        String   @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -72,8 +71,8 @@ model Publication {
   ownerId     String
   owner       User     @relation("ownedPublications", fields: [ownerId], references: [id], onDelete: Cascade)
   members     PublicationMember[]
-  emails      Email[]
   subscribers Subscriber[]
+  newsletters Newsletter[]
   automations Automation[]
 
   @@index([ownerId])
@@ -90,20 +89,15 @@ model Email {
   updatedAt   DateTime    @updatedAt
 
   // Relations
-  publicationId String
-  publication  Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  newsletterId String
+  newsletter   Newsletter @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
   analytics    EmailAnalytics?
   automationEmails AutomationEmail[]
 
-  // Add these fields
-  newsletterId String?
-  newsletter   Newsletter? @relation(fields: [newsletterId], references: [id])
-
-  @@index([publicationId])
+  @@index([newsletterId])
   @@index([status])
   @@index([scheduledFor])
   @@index([sentAt])
-  @@index([newsletterId])
 }
 
 model EmailAnalytics {
@@ -291,6 +285,7 @@ model PublicationMember {
 model Newsletter {
   id          String   @id @default(cuid())
   name        String
+  status      EmailStatus @default(DRAFT)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -298,6 +293,27 @@ model Newsletter {
   publicationId String
   publication  Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
   emails      Email[]
+  analytics   NewsletterAnalytics?
 
   @@index([publicationId])
+  @@index([status])
+}
+
+model NewsletterAnalytics {
+  id            String   @id @default(cuid())
+  totalEmails   Int      @default(0)
+  totalOpens    Int      @default(0)
+  uniqueOpens   Int      @default(0)
+  totalClicks   Int      @default(0)
+  uniqueClicks  Int      @default(0)
+  bounces       Int      @default(0)
+  unsubscribes  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  newsletterId  String   @unique
+  newsletter    Newsletter @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
 }
