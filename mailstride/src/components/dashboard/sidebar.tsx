@@ -15,6 +15,7 @@ import {
   BoltIcon,
 } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/button'
+import { PublicationSwitcher } from "./publication-switcher"
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
@@ -41,6 +42,10 @@ export function Sidebar() {
         >
           <XMarkIcon className="w-6 h-6" />
         </Button>
+      </div>
+
+      <div className="p-4">
+        <PublicationSwitcher />
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
