@@ -24,12 +24,14 @@ import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { createEmail } from "@/lib/actions/newsletters"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { use } from "react"
 
-export default function CreateEmailPage({
-  params: { newsletterId }
-}: {
-  params: { newsletterId: string }
-}) {
+interface CreateEmailPageProps {
+  params: Promise<{ newsletterId: string }>
+}
+
+export default function CreateEmailPage({ params }: CreateEmailPageProps) {
+  const { newsletterId } = use(params)
   const router = useRouter()
   const [date, setDate] = useState<Date>()
   const [showAdvanced, setShowAdvanced] = useState(false)
