@@ -8,6 +8,10 @@ import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { ChevronRightIcon } from "@heroicons/react/24/outline"
 import { createPublication } from "@/lib/actions/publications"
+import Link from "next/link"
+import { PencilSquareIcon } from "@heroicons/react/24/outline"
+import { CheckIcon } from "@heroicons/react/24/outline"
+import { LayoutDashboard } from "lucide-react"
 
 const AUDIENCES = [
   { value: 'startup-founders', label: 'Startup Founders' },
@@ -155,6 +159,60 @@ function PublicationSetupStep({ onNext }: { onNext: () => void }) {
   )
 }
 
+function SuccessStep() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="space-y-8"
+    >
+      <div className="text-center space-y-2">
+        <motion.div
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center"
+        >
+          <CheckIcon className="h-8 w-8 text-green-600" />
+        </motion.div>
+        <h2 className="text-2xl font-bold text-slate-800">
+          You're all set! 🎉
+        </h2>
+        <p className="text-gray-600">
+          Your publication has been created. What would you like to do next?
+        </p>
+      </div>
+
+      <div className="grid gap-4">
+        <Button
+          asChild
+          className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+        >
+          <Link href="/dashboard/emails/new">
+            <div className="flex items-center justify-center">
+              <PencilSquareIcon className="w-4 h-4 mr-2" />
+              Create Your First Newsletter
+            </div>
+          </Link>
+        </Button>
+        <Button
+          asChild
+          variant="outline"
+          className="w-full"
+        >
+          <Link href="/dashboard">
+            <div className="flex items-center justify-center">
+              <LayoutDashboard className="w-4 h-4 mr-2" />
+              Go to Dashboard
+            </div>
+          </Link>
+        </Button>
+      </div>
+    </motion.div>
+  )
+}
+
 export default function Onboarding() {
   const [step, setStep] = useState(1)
   const [name, setName] = useState("there")
@@ -186,6 +244,11 @@ export default function Onboarding() {
             <PublicationSetupStep 
               key="setup"
               onNext={() => setStep(3)}
+            />
+          )}
+          {step === 3 && (
+            <SuccessStep 
+              key="success"
             />
           )}
         </AnimatePresence>
