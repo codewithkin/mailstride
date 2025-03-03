@@ -30,7 +30,7 @@ export default function RootLayout({
         <QueryProvider>
           {children}
         </QueryProvider>
-        <Toaster />
+        <Toaster richColors position="top-center" visibleToasts={10} />
       </body>
     </html>
   );
