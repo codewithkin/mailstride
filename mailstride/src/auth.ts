@@ -35,7 +35,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           if (!res.ok) {
             console.error(await res.json())
-
             throw new Error('Failed to send verification email')
           }
         } catch (error) {
@@ -56,29 +55,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     newUser: '/auth/onboarding',
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
-      // Check if this is a new user
-      const existingUser = await prisma.user.findUnique({
-        where: { email: user.email! },
-      })
-
-      if (!existingUser) {
-        return '/auth/onboarding' // Redirect new users to onboarding
-      }
-
-      return true // Allow sign in
-    },
     async redirect({ url, baseUrl }) {
-      // Always redirect to dashboard after sign in
-      if (url.startsWith('/auth/signin')) {
-        return `${baseUrl}/dashboard`
-      }
-      // If it's an internal URL, allow it
-      if (url.startsWith(baseUrl)) {
-        return url
-      }
-      // Default to dashboard
-      return `${baseUrl}/dashboard`
+      return '/dashboard'
     },
     async session({ session, user }) {
       if (session.user) {
