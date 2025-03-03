@@ -73,25 +73,34 @@ body {
 
 /* Webkit browsers (Chrome, Safari, newer versions of Edge) */
 ::-webkit-scrollbar {
-  width: 8px; /* Half of default 16px */
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
+  border-radius: 100vh;
+  margin: 0.5rem 0; /* Add some space at top and bottom */
 }
 
 ::-webkit-scrollbar-thumb {
-  border-radius: 8px;
-  background: linear-gradient(to bottom, #818cf8, #a855f7);
+  border-radius: 100vh;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  background-image: linear-gradient(to bottom, #818cf8, #a855f7);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #6366f1, #9333ea);
+  background-image: linear-gradient(to bottom, #6366f1, #9333ea);
+}
+
+/* Hide scrollbar buttons */
+::-webkit-scrollbar-button {
+  display: none;
 }
 
 /* Firefox */
 * {
-  scrollbar-width: thin; /* "auto" or "thin" */
+  scrollbar-width: thin;
   scrollbar-color: #818cf8 transparent;
 }
 
