@@ -12,6 +12,7 @@ import {
   UsersIcon,
   ChartPieIcon,
   Cog6ToothIcon,
+  BoltIcon,
 } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/button'
 
@@ -20,6 +21,7 @@ const navigation = [
   { name: 'Emails', href: '/dashboard/emails', icon: EnvelopeIcon },
   { name: 'Subscribers', href: '/dashboard/subscribers', icon: UsersIcon },
   { name: 'Analytics', href: '/dashboard/analytics', icon: ChartPieIcon },
+  { name: 'Automations', href: '/dashboard/automations', icon: BoltIcon },
   { name: 'Settings', href: '/dashboard/settings', icon: Cog6ToothIcon },
 ]
 
