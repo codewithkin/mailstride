@@ -80,19 +80,20 @@ model Publication {
 }
 
 model Email {
-  id          String      @id @default(cuid())
-  subject     String
-  content     String      @db.Text
-  status      EmailStatus @default(DRAFT)
-  sentAt      DateTime?
-  scheduledFor DateTime?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id            String      @id @default(cuid())
+  subject       String
+  content       String      @db.Text
+  design        String?     @db.Text
+  status        EmailStatus @default(DRAFT)
+  sentAt        DateTime?
+  scheduledFor  DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   // Relations
-  newsletterId String
-  newsletter   Newsletter @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
-  analytics    EmailAnalytics?
+  newsletterId  String
+  newsletter    Newsletter  @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
+  analytics     EmailAnalytics?
   automationEmails AutomationEmail[]
 
   @@index([newsletterId])
