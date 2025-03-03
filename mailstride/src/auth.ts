@@ -1,7 +1,7 @@
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import NextAuth from "next-auth"
 import Resend from "next-auth/providers/resend"
-import Google from "next-auth/providers/google"
+import GoogleProvider from "next-auth/providers/google"
 import { prisma } from "./prisma"
 import { render } from '@react-email/render'
 import { AuthEmail } from "@/components/emails/auth-email"
@@ -43,7 +43,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       },
     }),
-    Google({
+    GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
@@ -56,19 +56,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     newUser: '/auth/onboarding',
   },
   callbacks: {
-    async signIn({ user, account }) {
-      return true
+    async signIn({ user, account, profile }) {
+      // Check if this is a new user
+      const existingUser = await prisma.user.findUnique({
+        where: { email: user.email! },
+      })
+
+      if (!existingUser) {
+        return '/auth/onboarding' // Redirect new users to onboarding
+      }
+
+      return true // Allow sign in
     },
     async redirect({ url, baseUrl }) {
-      // If the url starts with '/', join it with the base url
-      if (url.startsWith('/')) {
-        return `${baseUrl}${url}`
+      // Always redirect to dashboard after sign in
+      if (url.startsWith('/auth/signin')) {
+        return `${baseUrl}/dashboard`
       }
-      // If the url is already absolute, allow it
-      else if (new URL(url).origin === baseUrl) {
+      // If it's an internal URL, allow it
+      if (url.startsWith(baseUrl)) {
         return url
       }
-      return baseUrl
+      // Default to dashboard
+      return `${baseUrl}/dashboard`
     },
     async session({ session, user }) {
       if (session.user) {
