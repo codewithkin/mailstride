@@ -10,14 +10,11 @@ import { Label } from "@/components/ui/label"
 import dynamic from "next/dynamic"
 import { 
   ArrowLeftIcon, 
-  EnvelopeIcon,
   ClockIcon,
-  Cog6ToothIcon,
   EyeIcon
 } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { toast } from "sonner"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -26,7 +23,6 @@ import { cn } from "@/lib/utils"
 import { createEmail } from "@/lib/actions/newsletters"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { use } from "react"
-import { type EditorRef, type EmailEditorProps } from 'react-email-editor'
 
 // Create a dynamic import for EmailEditor with SSR disabled
 const EmailEditor = dynamic(() => import('react-email-editor').then(mod => mod.default), { 
@@ -60,10 +56,18 @@ const defaultTemplate = {
   }
 }
 
+// Update the type for the editor ref
+type UnlayerType = {
+  loadDesign: (design: any) => void;
+  exportHtml: (callback: (data: { design: any; html: string }) => void) => void;
+  saveDesign: (callback: (design: any) => void) => void;
+}
+
 export default function CreateEmailPage({ params }: CreateEmailPageProps) {
   const { newsletterId } = use(params)
   const router = useRouter()
-  const emailEditorRef = useRef<any>(null)
+  const [editorLoaded, setEditorLoaded] = useState(false)
+  const emailEditorRef = useRef<{ editor: UnlayerType } | null>(null)
   const [date, setDate] = useState<Date>()
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [subject, setSubject] = useState('')
@@ -72,12 +76,12 @@ export default function CreateEmailPage({ params }: CreateEmailPageProps) {
   const { mutate: createEmailMutation, isPending } = useMutation({
     mutationFn: async (formData: FormData) => {
       return new Promise((resolve, reject) => {
-        if (!emailEditorRef.current) {
+        if (!emailEditorRef.current?.editor) {
           reject(new Error('Editor not initialized'))
           return
         }
 
-        emailEditorRef.current.exportHtml((data: any) => {
+        emailEditorRef.current.editor.exportHtml((data) => {
           const { html, design } = data
           formData.append('content', html)
           formData.append('design', JSON.stringify(design))
@@ -110,17 +114,16 @@ export default function CreateEmailPage({ params }: CreateEmailPageProps) {
     }
   })
 
-  const onReady = () => {
-    // Make sure the editor is initialized
-    if (emailEditorRef.current) {
-      emailEditorRef.current.loadDesign(defaultTemplate)
-    }
+  const onReady = (editor: UnlayerType) => {
+    emailEditorRef.current = { editor }
+    setEditorLoaded(true)
+    editor.loadDesign(defaultTemplate)
   }
 
   const exportHtml = () => {
-    if (!emailEditorRef.current) return
+    if (!emailEditorRef.current?.editor) return
 
-    emailEditorRef.current.exportHtml((data: any) => {
+    emailEditorRef.current.editor.exportHtml((data) => {
       const { design, html } = data
       console.log('exportHtml', html)
     })
