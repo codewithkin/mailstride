@@ -85,6 +85,9 @@ model Email {
   automationEmails AutomationEmail[]
 
   @@index([publicationId])
+  @@index([status])
+  @@index([scheduledFor])
+  @@index([sentAt])
 }
 
 model EmailAnalytics {
@@ -103,6 +106,8 @@ model EmailAnalytics {
   email       Email    @relation(fields: [emailId], references: [id], onDelete: Cascade)
   clickEvents ClickEvent[]
   openEvents  OpenEvent[]
+
+  @@index([createdAt])
 }
 
 model ClickEvent {
@@ -118,6 +123,8 @@ model ClickEvent {
 
   @@index([analyticsId])
   @@index([subscriberId])
+  @@index([timestamp])
+  @@index([url])
 }
 
 model OpenEvent {
@@ -132,6 +139,7 @@ model OpenEvent {
 
   @@index([analyticsId])
   @@index([subscriberId])
+  @@index([timestamp])
 }
 
 model Subscriber {
@@ -152,6 +160,9 @@ model Subscriber {
 
   @@unique([email, publicationId])
   @@index([publicationId])
+  @@index([email])
+  @@index([subscribed])
+  @@index([createdAt])
 }
 
 model Tag {
@@ -162,6 +173,8 @@ model Tag {
 
   // Relations
   subscribers Subscriber[]
+
+  @@unique([name])
 }
 
 model Automation {
@@ -179,6 +192,8 @@ model Automation {
   emails       AutomationEmail[]
 
   @@index([publicationId])
+  @@index([type])
+  @@index([active])
 }
 
 model AutomationEmail {
@@ -196,6 +211,7 @@ model AutomationEmail {
 
   @@index([automationId])
   @@index([emailId])
+  @@index([order])
 }
 
 // NextAuth.js Models
