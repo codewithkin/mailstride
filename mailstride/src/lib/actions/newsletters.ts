@@ -12,40 +12,18 @@ export async function createNewsletter(formData: FormData) {
   }
 
   const name = formData.get('name') as string
-  const subject = formData.get('subject') as string
-  const content = formData.get('content') as string
   const publicationId = formData.get('publicationId') as string
-  const scheduledFor = formData.get('scheduledFor') as string | null
 
-  if (!name || !subject || !content || !publicationId) {
+  if (!name || !publicationId) {
     throw new Error("Missing required fields")
   }
 
   try {
-    // First create the newsletter
     const newsletter = await prisma.newsletter.create({
       data: {
         name,
         publicationId,
         status: EmailStatus.DRAFT,
-        // Create the first email for this newsletter
-        emails: {
-          create: {
-            subject,
-            content,
-            status: EmailStatus.DRAFT,
-            scheduledFor: scheduledFor ? new Date(scheduledFor) : null
-          }
-        }
-      },
-      include: {
-        emails: true,
-        publication: {
-          select: {
-            name: true,
-            slug: true
-          }
-        }
       }
     })
 
@@ -83,5 +61,43 @@ export async function getUserNewsletters(publicationId: string) {
   } catch (error) {
     console.error('Failed to fetch newsletters:', error)
     return []
+  }
+}
+
+export async function createEmail(newsletterId: string, formData: FormData) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    throw new Error("Not authenticated")
+  }
+
+  const subject = formData.get('subject') as string
+  const content = formData.get('content') as string
+  const scheduledFor = formData.get('scheduledFor') as string | null
+
+  if (!subject || !content) {
+    throw new Error("Missing required fields")
+  }
+
+  try {
+    const email = await prisma.email.create({
+      data: {
+        subject,
+        content,
+        status: EmailStatus.DRAFT,
+        scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
+        newsletterId
+      }
+    })
+
+    revalidatePath('/dashboard')
+    revalidatePath('/dashboard/newsletters')
+    revalidatePath(`/dashboard/newsletters/${newsletterId}`)
+    return email
+  } catch (error) {
+    console.error('Failed to create email:', error)
+    if (error instanceof Error) {
+      throw new Error(error.message)
+    }
+    throw new Error('Failed to create email')
   }
 } 
