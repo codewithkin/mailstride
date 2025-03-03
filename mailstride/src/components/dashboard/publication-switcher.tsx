@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ArrowUp } from "lucide-react"
 
 // Mock data - replace with real data later
 const publications = [
@@ -75,7 +76,7 @@ export function PublicationSwitcher() {
           <Button
             className={`w-full text-white ${PLANS[currentPlan].color}`}
           >
-            <ChevronUpIcon className="mr-2 h-4 w-4" />
+            <ArrowUp className="h-4 w-4" />
             Upgrade to {PLANS[currentPlan].name}
           </Button>
         </DropdownMenuItem>
