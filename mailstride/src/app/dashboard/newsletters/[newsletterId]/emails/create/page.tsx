@@ -139,7 +139,7 @@ export default function CreateEmailPage({ params }: CreateEmailPageProps) {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="h-screen flex flex-col overflow-hidden">
       <header className="flex-none bg-white border-b border-gray-200">
         <div className="px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
@@ -259,11 +259,16 @@ export default function CreateEmailPage({ params }: CreateEmailPageProps) {
         </form>
       </div>
 
-      <div className="flex-1 w-full">
+      <div className="flex-1 overflow-hidden">
         <EmailEditor 
           ref={emailEditorRef}
           onReady={onReady}
-          style={{ height: '100%' }}
+          style={{ 
+            height: 'calc(100vh - 200px)', // Adjust this value based on your header + form height
+            margin: 0,
+            padding: 0,
+            border: 'none'
+          }}
           options={{
             appearance: {
               theme: 'light',
@@ -283,7 +288,9 @@ export default function CreateEmailPage({ params }: CreateEmailPageProps) {
               social: { enabled: true },
               timer: { enabled: true },
               video: { enabled: true }
-            }
+            },
+            displayMode: 'email',
+            minHeight: '100%'
           }}
         />
       </div>
