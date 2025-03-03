@@ -6,12 +6,15 @@ import {
   EnvelopeIcon, 
   UserGroupIcon, 
   ChartBarIcon,
-  PencilSquareIcon 
+  PencilSquareIcon,
+  ArrowUpIcon
 } from "@heroicons/react/24/outline"
 import { Button } from "@/components/ui/button"
 import { LoadingCard } from "@/components/dashboard/loading-card"
 import { getDashboardStats, getRecentEmails } from "@/lib/api/queries"
 import { Skeleton } from "@/components/ui/skeleton"
+import Link from "next/link"
+import { Plus } from "lucide-react"
 
 export default function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -33,12 +36,24 @@ export default function Dashboard() {
             <h1 className="text-2xl font-semibold text-gray-900 font-geist-sans ml-12 sm:ml-0">
               Dashboard
             </h1>
-            <Button
-              className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
-            >
-              <PencilSquareIcon className="h-5 w-5 mr-2" />
-              New Email
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                className="hidden sm:flex items-center gap-2"
+              >
+                <ArrowUpIcon className="w-4 h-4" />
+                Upgrade to Pro
+              </Button>
+              <Button
+                asChild
+                className="hidden sm:flex bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+              >
+                <Link href="/dashboard/emails/new">
+                  <PencilSquareIcon className="w-4 h-4 mr-2" />
+                  New Newsletter
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -172,6 +187,20 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+
+      {/* Floating Action Button - visible on all screens */}
+      <Link 
+        href="/dashboard/emails/new"
+        className="fixed bottom-6 right-6 z-50"
+      >
+        <Button
+          size="lg"
+          className="rounded-full w-14 h-14 shadow-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+        >
+          <Plus className="w-6 h-6" />
+          <span className="sr-only">New Email</span>
+        </Button>
+      </Link>
     </div>
   )
 } 
