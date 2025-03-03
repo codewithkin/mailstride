@@ -58,16 +58,26 @@ export default function NewNewsletter() {
             <TabsContent value="compose" className="p-6 space-y-6">
               <div className="space-y-4">
                 <div>
-                  <Label>Subject</Label>
+                  <Label>Newsletter Name</Label>
                   <Input 
-                    placeholder="Enter your newsletter subject"
+                    placeholder="e.g., Weekly Tech Updates, Monthly Marketing Tips"
+                    className="mt-1.5"
+                  />
+                  <p className="mt-1.5 text-sm text-gray-500">
+                    This will help you organize your emails under a specific category
+                  </p>
+                </div>
+                <div>
+                  <Label>First Email Subject</Label>
+                  <Input 
+                    placeholder="Enter your email subject"
                     className="mt-1.5"
                   />
                 </div>
                 <div>
                   <Label>Content</Label>
                   <Textarea 
-                    placeholder="Write your newsletter content..."
+                    placeholder="Write your email content..."
                     className="mt-1.5 min-h-[300px]"
                   />
                 </div>
@@ -147,7 +157,7 @@ export default function NewNewsletter() {
                 Save as Draft
               </Button>
               <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700">
-                Send Newsletter
+                Create Newsletter
               </Button>
             </div>
           </div>
