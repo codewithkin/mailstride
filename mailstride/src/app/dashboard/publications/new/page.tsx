@@ -35,7 +35,7 @@ export default function NewPublicationPage() {
   const router = useRouter()
   const [audience, setAudience] = useState<string>('')
 
-  const { mutate: createPublicationMutation, isLoading } = useMutation({
+  const { mutate: createPublicationMutation, isPending } = useMutation({
     mutationFn: async (formData: FormData) => {
       formData.append('audience', audience)
       const result = await createPublication(formData)
@@ -63,6 +63,7 @@ export default function NewPublicationPage() {
       toast.error('Please select a target audience')
       return
     }
+
     createPublicationMutation(formData)
   }
 
@@ -95,7 +96,7 @@ export default function NewPublicationPage() {
                 <Label>Publication Name</Label>
                 <Input
                   type="text"
-                  name="name"
+                  name="publicationName"
                   placeholder="e.g., Tech Weekly, Marketing Insights"
                   required
                 />
@@ -134,7 +135,7 @@ export default function NewPublicationPage() {
               <Button
                 variant="outline"
                 asChild
-                disabled={isLoading}
+                disabled={isPending}
               >
                 <Link href="/dashboard">
                   Cancel
@@ -142,10 +143,10 @@ export default function NewPublicationPage() {
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={isPending}
                 className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
               >
-                {isLoading ? (
+                {isPending ? (
                   <div className="flex items-center gap-2">
                     <LoadingSpinner />
                     <span>Creating...</span>

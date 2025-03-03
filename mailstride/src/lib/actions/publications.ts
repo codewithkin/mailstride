@@ -11,7 +11,7 @@ export async function createPublication(formData: FormData) {
     throw new Error("Not authenticated")
   }
 
-  const name = formData.get('newsletterName') as string
+  const name = formData.get('publicationName') as string
   const audience = formData.get('audience') as string
   const description = formData.get('description') as string | null
 
