@@ -35,6 +35,13 @@ enum AutomationType {
   SEQUENCE
 }
 
+enum PublicationRole {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -48,24 +55,28 @@ model User {
   // Relations
   accounts      Account[]
   sessions      Session[]
-  publications  Publication[]
+  ownedPublications Publication[]
+  publicationMembers PublicationMember[]
 }
 
 model Publication {
   id          String   @id @default(cuid())
   name        String
   description String?
+  slug        String   @unique // For nice URLs
+  audience    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members     PublicationMember[]
   emails      Email[]
   subscribers Subscriber[]
   automations Automation[]
 
-  @@index([userId])
+  @@index([ownerId])
 }
 
 model Email {
@@ -251,4 +262,22 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// New model for publication members
+model PublicationMember {
+  id            String          @id @default(cuid())
+  role          PublicationRole @default(EDITOR)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  // Relations
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  publicationId String
+  publication   Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, publicationId])
+  @@index([userId])
+  @@index([publicationId])
 }

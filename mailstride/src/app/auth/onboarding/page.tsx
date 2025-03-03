@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { useDropzone } from 'react-dropzone'
 import { ChevronRightIcon } from "@heroicons/react/24/outline"
+import { createPublication } from "@/lib/actions/publications"
 
 const AUDIENCES = [
   { value: 'startup-founders', label: 'Startup Founders' },
@@ -64,6 +65,17 @@ function WelcomeStep({ onNext, name }: { onNext: () => void, name: string }) {
   )
 }
 
+async function handleCreatePublication(formData: FormData, onNext: () => void) {
+  try {
+    await createPublication(formData)
+    // Move to next step after successful creation
+    onNext()
+  } catch (error) {
+    console.error('Failed to create publication:', error)
+    // You might want to show an error toast here
+  }
+}
+
 function NewsletterSetupStep({ onNext }: { onNext: () => void }) {
   return (
     <motion.div
@@ -72,7 +84,7 @@ function NewsletterSetupStep({ onNext }: { onNext: () => void }) {
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
-      <div className="space-y-4">
+      <form action={handleCreatePublication} className="space-y-4">
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
             Newsletter Name
@@ -89,7 +101,7 @@ function NewsletterSetupStep({ onNext }: { onNext: () => void }) {
           <label className="block text-sm font-medium text-gray-700">
             Choose your audience
           </label>
-          <Select name="audience">
+          <Select name="audience" required>
             <SelectTrigger>
               <SelectValue placeholder="Select your target audience" />
             </SelectTrigger>
@@ -103,21 +115,25 @@ function NewsletterSetupStep({ onNext }: { onNext: () => void }) {
           </Select>
         </div>
 
-        <div className="p-4 bg-gray-50 rounded-xl">
-          <p className="text-sm text-gray-600">
-            Preview: Introducing <span className="font-medium">The Growth Hustle</span> – 
-            delivering weekly insights on Startup Trends.
-          </p>
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Description (optional)
+          </label>
+          <Textarea
+            name="description"
+            placeholder="Tell your subscribers what to expect"
+            className="h-24"
+          />
         </div>
-      </div>
 
-      <Button
-        onClick={onNext}
-        className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
-      >
-        Next: Add Subscribers
-        <ChevronRightIcon className="w-4 h-4 ml-2" />
-      </Button>
+        <Button
+          type="submit"
+          className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+        >
+          Create Newsletter
+          <ChevronRightIcon className="w-4 h-4 ml-2" />
+        </Button>
+      </form>
     </motion.div>
   )
 }
