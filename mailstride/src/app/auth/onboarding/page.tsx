@@ -138,6 +138,9 @@ function SubscribersStep({ onNext }: { onNext: () => void }) {
       className="space-y-6"
     >
       <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-slate-800 text-center">
+          Add Subscribers
+        </h2>
         <div
           {...getRootProps()}
           className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors
@@ -157,12 +160,6 @@ function SubscribersStep({ onNext }: { onNext: () => void }) {
             placeholder="Enter email addresses (one per line)"
             className="h-32"
           />
-        </div>
-
-        <div className="p-4 bg-indigo-50 rounded-xl">
-          <p className="text-sm text-indigo-600">
-            🎁 Start strong! Adding subscribers now unlocks 500 extra free emails this month.
-          </p>
         </div>
       </div>
 
