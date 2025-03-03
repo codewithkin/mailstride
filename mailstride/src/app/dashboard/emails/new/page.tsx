@@ -57,10 +57,10 @@ export default function NewNewsletter() {
         description: 'Your newsletter has been created and is ready to use.',
         action: {
           label: 'View',
-          onClick: () => router.push('/dashboard/emails')
+          onClick: () => router.push('/dashboard/newsletters')
         }
       })
-      router.push('/dashboard/emails')
+      router.push('/dashboard/newsletters')
     },
     onError: (error: Error) => {
       toast.error('Failed to create newsletter', {

@@ -190,7 +190,7 @@ export default function Dashboard() {
 
       {/* Floating Action Button - visible on all screens */}
       <Link 
-        href="/dashboard/emails/new"
+        href="/dashboard/newsletters/create"
         className="fixed bottom-6 right-6 z-50"
       >
         <Button
