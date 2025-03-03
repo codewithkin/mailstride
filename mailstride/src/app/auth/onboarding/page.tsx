@@ -102,7 +102,7 @@ function PublicationSetupStep({ onNext }: { onNext: () => void }) {
           </label>
           <Input
             type="text"
-            name="newsletterName"
+            name="publicationName"
             placeholder="e.g., Tech Weekly, Marketing Insights"
             required
           />

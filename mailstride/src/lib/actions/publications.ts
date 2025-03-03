@@ -11,9 +11,12 @@ export async function createPublication(formData: FormData) {
     throw new Error("Not authenticated")
   }
 
+
   const name = formData.get('publicationName') as string
   const audience = formData.get('audience') as string
   const description = formData.get('description') as string | null
+
+  console.log(name, audience, description)
 
   if (!name || !audience) {
     throw new Error("Name and audience are required")
@@ -47,8 +50,7 @@ export async function createPublication(formData: FormData) {
         members: true,
         _count: {
           select: {
-            subscribers: true,
-            emails: true
+            subscribers: true
           }
         }
       }
@@ -99,7 +101,6 @@ export async function getUserPublications() {
         _count: {
           select: {
             subscribers: true,
-            emails: true
           }
         }
       }
