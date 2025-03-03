@@ -52,7 +52,7 @@ export default function Dashboard() {
               <LoadingCard />
               <LoadingCard />
             </>
-          ) : stats ? (
+          ) : (
             <>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -61,12 +61,12 @@ export default function Dashboard() {
               >
                 <div className="flex items-center justify-between">
                   <UserGroupIcon className="h-8 w-8 text-gray-400" />
-                  <span className="text-sm font-medium text-green-600">
+                  <span className="text-sm font-medium text-gray-600">
                     Active
                   </span>
                 </div>
                 <p className="mt-4 text-2xl font-semibold text-gray-900 font-geist-sans">
-                  {stats.subscribers.toLocaleString()}
+                  {stats?.subscribers.toLocaleString() ?? '0'}
                 </p>
                 <p className="mt-1 text-sm text-gray-500">
                   Total Subscribers
@@ -81,12 +81,12 @@ export default function Dashboard() {
               >
                 <div className="flex items-center justify-between">
                   <EnvelopeIcon className="h-8 w-8 text-gray-400" />
-                  <span className="text-sm font-medium text-green-600">
-                    {stats.openRate > "50%" ? "Good" : "Needs Improvement"}
+                  <span className="text-sm font-medium text-gray-600">
+                    {(stats?.openRate ?? "0%") > "50%" ? "Good" : "Needs Improvement"}
                   </span>
                 </div>
                 <p className="mt-4 text-2xl font-semibold text-gray-900 font-geist-sans">
-                  {stats.openRate}
+                  {stats?.openRate ?? '0%'}
                 </p>
                 <p className="mt-1 text-sm text-gray-500">
                   Open Rate
@@ -101,19 +101,19 @@ export default function Dashboard() {
               >
                 <div className="flex items-center justify-between">
                   <ChartBarIcon className="h-8 w-8 text-gray-400" />
-                  <span className="text-sm font-medium text-green-600">
-                    {stats.clickRate > "20%" ? "Good" : "Needs Improvement"}
+                  <span className="text-sm font-medium text-gray-600">
+                    {(stats?.clickRate ?? "0%") > "20%" ? "Good" : "Needs Improvement"}
                   </span>
                 </div>
                 <p className="mt-4 text-2xl font-semibold text-gray-900 font-geist-sans">
-                  {stats.clickRate}
+                  {stats?.clickRate ?? '0%'}
                 </p>
                 <p className="mt-1 text-sm text-gray-500">
                   Click Rate
                 </p>
               </motion.div>
             </>
-          ) : null}
+          )}
         </div>
 
         {/* Recent Emails */}
@@ -151,13 +151,13 @@ export default function Dashboard() {
                       <div className="flex items-center gap-1">
                         <EnvelopeIcon className="h-4 w-4 text-gray-400" />
                         <span className="text-gray-600">
-                          {email.analytics?.opens.toLocaleString()}
+                          {email.analytics?.opens.toLocaleString() ?? '0'}
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <ChartBarIcon className="h-4 w-4 text-gray-400" />
                         <span className="text-gray-600">
-                          {email.analytics?.clicks.toLocaleString()}
+                          {email.analytics?.clicks.toLocaleString() ?? '0'}
                         </span>
                       </div>
                     </div>
