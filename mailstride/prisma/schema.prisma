@@ -95,10 +95,15 @@ model Email {
   analytics    EmailAnalytics?
   automationEmails AutomationEmail[]
 
+  // Add these fields
+  newsletterId String?
+  newsletter   Newsletter? @relation(fields: [newsletterId], references: [id])
+
   @@index([publicationId])
   @@index([status])
   @@index([scheduledFor])
   @@index([sentAt])
+  @@index([newsletterId])
 }
 
 model EmailAnalytics {
@@ -279,5 +284,20 @@ model PublicationMember {
 
   @@unique([userId, publicationId])
   @@index([userId])
+  @@index([publicationId])
+}
+
+// Add this model to your schema
+model Newsletter {
+  id          String   @id @default(cuid())
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  publicationId String
+  publication  Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  emails      Email[]
+
   @@index([publicationId])
 }

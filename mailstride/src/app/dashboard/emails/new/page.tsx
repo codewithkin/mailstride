@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,10 +20,33 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+import { getUserPublications } from "@/lib/actions/publications"
+import { createNewsletter } from "@/lib/actions/newsletters"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 export default function NewNewsletter() {
   const [date, setDate] = useState<Date>()
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const { data: publications } = useQuery({
+    queryKey: ['publications'],
+    queryFn: getUserPublications
+  })
+
+  async function handleSubmit(formData: FormData) {
+    try {
+      setIsSubmitting(true)
+      await createNewsletter(formData)
+      // Redirect to the newsletters page
+      window.location.href = '/dashboard/emails'
+    } catch (error) {
+      console.error('Failed to create newsletter:', error)
+      // Add error handling UI here
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -57,6 +81,21 @@ export default function NewNewsletter() {
 
             <TabsContent value="compose" className="p-6 space-y-6">
               <div className="space-y-4">
+                <div>
+                  <Label>Publication</Label>
+                  <select 
+                    name="publicationId"
+                    className="w-full mt-1.5 rounded-md border border-input bg-background px-3 py-2"
+                    required
+                  >
+                    <option value="">Select a publication</option>
+                    {publications?.map((pub) => (
+                      <option key={pub.id} value={pub.id}>
+                        {pub.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div>
                   <Label>Newsletter Name</Label>
                   <Input 
@@ -153,11 +192,22 @@ export default function NewNewsletter() {
 
           <div className="border-t border-gray-200 p-6 bg-gray-50/50">
             <div className="flex justify-end gap-3">
-              <Button variant="outline">
+              <Button variant="outline" disabled={isSubmitting}>
                 Save as Draft
               </Button>
-              <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700">
-                Create Newsletter
+              <Button 
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <LoadingSpinner />
+                    <span>Creating...</span>
+                  </div>
+                ) : (
+                  "Create Newsletter"
+                )}
               </Button>
             </div>
           </div>
