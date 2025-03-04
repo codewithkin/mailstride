@@ -264,7 +264,7 @@ export default function CreateEmailPage({ params }: CreateEmailPageProps) {
           ref={emailEditorRef}
           onReady={onReady}
           style={{ 
-            height: 'calc(100vh - 200px)', // Adjust this value based on your header + form height
+            height: 'calc(100vh - 200px)',
             margin: 0,
             padding: 0,
             border: 'none'

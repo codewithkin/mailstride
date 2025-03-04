@@ -72,6 +72,7 @@ export async function createEmail(newsletterId: string, formData: FormData) {
 
   const subject = formData.get('subject') as string
   const content = formData.get('content') as string
+  const design = formData.get('design') as string
   const scheduledFor = formData.get('scheduledFor') as string | null
 
   if (!subject || !content) {
@@ -83,6 +84,7 @@ export async function createEmail(newsletterId: string, formData: FormData) {
       data: {
         subject,
         content,
+        design,
         status: EmailStatus.DRAFT,
         scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
         newsletterId
@@ -95,9 +97,70 @@ export async function createEmail(newsletterId: string, formData: FormData) {
     return email
   } catch (error) {
     console.error('Failed to create email:', error)
-    if (error instanceof Error) {
-      throw new Error(error.message)
-    }
-    throw new Error('Failed to create email')
+    throw error
+  }
+}
+
+export async function addSubscriber(newsletterId: string, formData: FormData) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    throw new Error("Not authenticated")
+  }
+
+  const email = formData.get('email') as string
+  const firstName = formData.get('firstName') as string
+  const lastName = formData.get('lastName') as string
+
+  if (!email) {
+    throw new Error("Email is required")
+  }
+
+  try {
+    const subscriber = await prisma.subscriber.upsert({
+      where: { email },
+      update: {
+        firstName,
+        lastName,
+        newsletters: {
+          connect: { id: newsletterId }
+        }
+      },
+      create: {
+        email,
+        firstName,
+        lastName,
+        newsletters: {
+          connect: { id: newsletterId }
+        }
+      }
+    })
+
+    revalidatePath(`/dashboard/newsletters/${newsletterId}/subscribers`)
+    return subscriber
+  } catch (error) {
+    console.error('Failed to add subscriber:', error)
+    throw error
+  }
+}
+
+export async function getNewsletterSubscribers(newsletterId: string) {
+  const session = await auth()
+  if (!session?.user?.id) return []
+
+  try {
+    const newsletter = await prisma.newsletter.findUnique({
+      where: { id: newsletterId },
+      include: {
+        subscribers: {
+          where: { status: 'ACTIVE' },
+          orderBy: { createdAt: 'desc' }
+        }
+      }
+    })
+
+    return newsletter?.subscribers || []
+  } catch (error) {
+    console.error('Failed to fetch subscribers:', error)
+    return []
   }
 } 
