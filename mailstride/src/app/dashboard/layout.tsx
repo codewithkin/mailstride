@@ -17,7 +17,7 @@ export default function DashboardLayout({
 
       {/* Floating Action Button - visible on all dashboard pages */}
       <Link 
-        href="/dashboard/newsletters/create"
+        href="/dashboard/emails/create"
         className="fixed bottom-6 right-6 z-50"
       >
         <Button
