@@ -89,12 +89,13 @@ model Email {
   scheduledFor  DateTime?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
-  audience      EmailAudience?
 
   // Relations
   newsletterId  String
   newsletter    Newsletter  @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
   analytics     EmailAnalytics?
+  audience      EmailAudience?
+  automationEmails AutomationEmail[]
 
   @@index([newsletterId])
   @@index([status])
@@ -136,20 +137,22 @@ model EmailAnalytics {
   // Relations
   emailId       String    @unique
   email         Email     @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  clickEvents   ClickEvent[]
+  openEvents    OpenEvent[]
 
   @@index([emailId])
 }
 
 model ClickEvent {
-  id          String   @id @default(cuid())
-  url         String
-  timestamp   DateTime @default(now())
+  id            String   @id @default(cuid())
+  url           String
+  timestamp     DateTime @default(now())
   
   // Relations
-  analyticsId String
-  analytics   EmailAnalytics @relation(fields: [analyticsId], references: [id], onDelete: Cascade)
-  subscriberId String
-  subscriber  Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  analyticsId   String
+  analytics     EmailAnalytics @relation(fields: [analyticsId], references: [id], onDelete: Cascade)
+  subscriberId  String
+  subscriber    Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
 
   @@index([analyticsId])
   @@index([subscriberId])
@@ -158,14 +161,14 @@ model ClickEvent {
 }
 
 model OpenEvent {
-  id          String   @id @default(cuid())
-  timestamp   DateTime @default(now())
+  id            String   @id @default(cuid())
+  timestamp     DateTime @default(now())
   
   // Relations
-  analyticsId String
-  analytics   EmailAnalytics @relation(fields: [analyticsId], references: [id], onDelete: Cascade)
-  subscriberId String
-  subscriber  Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  analyticsId   String
+  analytics     EmailAnalytics @relation(fields: [analyticsId], references: [id], onDelete: Cascade)
+  subscriberId  String
+  subscriber    Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
 
   @@index([analyticsId])
   @@index([subscriberId])
@@ -227,17 +230,16 @@ model Automation {
 }
 
 model AutomationEmail {
-  id          String   @id @default(cuid())
-  delay       Int      // Delay in minutes
-  order       Int      // Order in sequence
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  order         Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relations
-  automationId String
-  automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
-  emailId      String
-  email        Email      @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  automationId  String
+  automation    Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  emailId       String
+  email         Email      @relation(fields: [emailId], references: [id], onDelete: Cascade)
 
   @@index([automationId])
   @@index([emailId])
