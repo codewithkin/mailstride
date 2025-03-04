@@ -3,10 +3,12 @@ import { simpleParser } from 'mailparser'
 import { prisma } from '@/prisma'
 import { EmailStatus } from '@prisma/client'
 import { sign } from '@/lib/smtp/dkim'
+import { checkSendingLimits, ReputationManager } from './rate-limiter'
 import dns from 'dns'
 import { promisify } from 'util'
 
 const resolveMx = promisify(dns.resolveMx)
+const resolveTxt = promisify(dns.resolveTxt)
 
 const server = new SMTPServer({
   secure: true,
@@ -18,9 +20,20 @@ const server = new SMTPServer({
 
   // This is called when a client connects
   async onConnect(session, callback) {
-    // Verify IP reputation, rate limits, etc.
-    // TODO: Implement IP verification and rate limiting
-    callback()
+    try {
+      const { remoteAddress, clientHostname } = session
+      
+      // Check sending limits and reputation
+      await checkSendingLimits(
+        remoteAddress,
+        clientHostname,
+        1 // Will be updated in onMailFrom
+      )
+      
+      callback()
+    } catch (error) {
+      callback(new Error('Connection rejected'))
+    }
   },
 
   // This is called when receiving mail
@@ -29,18 +42,8 @@ const server = new SMTPServer({
       const email = await simpleParser(stream)
       const { from, to, subject, html, textAsHtml } = email
 
-      // Verify DKIM signature
-      // TODO: Implement DKIM verification
-
-      // Verify SPF record
-      const domain = from?.value?.[0]?.address?.split('@')[1]
-      if (domain) {
-        const records = await resolveMx(domain)
-        // TODO: Implement SPF verification
-      }
-
-      // Store the email in the database
-      await prisma.email.create({
+      // Store the email and update reputation
+      const storedEmail = await prisma.email.create({
         data: {
           subject: subject || '',
           content: html || textAsHtml || '',
@@ -49,9 +52,12 @@ const server = new SMTPServer({
         }
       })
 
+      await ReputationManager.updateReputation(session.remoteAddress, 'success')
+      
       callback()
     } catch (error) {
       console.error('Error processing email:', error)
+      await ReputationManager.updateReputation(session.remoteAddress, 'bounce')
       callback(new Error('Error processing email'))
     }
   }
