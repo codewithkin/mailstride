@@ -18,7 +18,7 @@ interface NewsletterSelectorProps {
 export function NewsletterSelector({ newsletters, onSelect }: NewsletterSelectorProps) {
   if (newsletters.length === 0) {
     return (
-      <div className="max-w-md mx-auto text-center space-y-6 mt-12">
+      <div className="max-w-md mx-auto text-center flex flex-col justify-center items-center space-y-6 mt-12">
         <div className="bg-gray-50 rounded-full p-4 w-16 h-16 mx-auto">
           <DocumentPlusIcon className="w-8 h-8 text-gray-400" />
         </div>
