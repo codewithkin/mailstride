@@ -59,6 +59,8 @@ export async function getUserNewsletters() {
       }
     })
 
+    console.log(newsletters)
+
     return newsletters
   } catch (error) {
     console.error('Failed to fetch newsletters:', error)

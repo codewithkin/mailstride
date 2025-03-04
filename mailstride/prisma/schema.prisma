@@ -131,6 +131,7 @@ model EmailAnalytics {
   uniqueClicks  Int       @default(0)
   bounces       Int       @default(0)
   complaints    Int       @default(0)
+  unsubscribes  Int       @default(0)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
