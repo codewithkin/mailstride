@@ -9,11 +9,14 @@ import { EmailEditor } from './email-editor'
 import { AudienceSelector } from './audience-selector'
 import { EmailPreview } from './email-preview'
 import { EmailStatus } from './email-status'
+import { createDraftEmail, updateEmailAudience, sendEmail } from '@/lib/actions/emails'
+import { toast } from 'sonner'
 
 type Step = 'compose' | 'audience' | 'preview' | 'status'
 
 export function EmailComposer({ newsletterId }: { newsletterId: string }) {
   const [step, setStep] = useState<Step>('compose')
+  const [emailId, setEmailId] = useState<string | null>(null)
   const [emailData, setEmailData] = useState({
     subject: '',
     content: '',
@@ -21,6 +24,7 @@ export function EmailComposer({ newsletterId }: { newsletterId: string }) {
   })
   const [selectedAudience, setSelectedAudience] = useState<string[]>([])
   const [status, setStatus] = useState<'success' | 'error' | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   const steps = {
     compose: {
@@ -28,9 +32,23 @@ export function EmailComposer({ newsletterId }: { newsletterId: string }) {
       component: (
         <EmailEditor 
           initialData={emailData}
-          onSave={(data) => {
-            setEmailData(data)
-            setStep('audience')
+          onSave={async (data) => {
+            try {
+              setIsLoading(true)
+              const email = await createDraftEmail({
+                ...data,
+                newsletterId
+              })
+              setEmailId(email.id)
+              setEmailData(data)
+              setStep('audience')
+              toast.success('Email draft saved')
+            } catch (error) {
+              toast.error('Failed to save email draft')
+              console.error(error)
+            } finally {
+              setIsLoading(false)
+            }
           }}
         />
       )
@@ -40,9 +58,20 @@ export function EmailComposer({ newsletterId }: { newsletterId: string }) {
       component: (
         <AudienceSelector
           newsletterId={newsletterId}
-          onSelect={(audience) => {
-            setSelectedAudience(audience)
-            setStep('preview')
+          onSelect={async (audience) => {
+            if (!emailId) return
+            try {
+              setIsLoading(true)
+              await updateEmailAudience(emailId, audience)
+              setSelectedAudience(audience)
+              setStep('preview')
+              toast.success('Audience updated')
+            } catch (error) {
+              toast.error('Failed to update audience')
+              console.error(error)
+            } finally {
+              setIsLoading(false)
+            }
           }}
           onBack={() => setStep('compose')}
         />
@@ -56,13 +85,20 @@ export function EmailComposer({ newsletterId }: { newsletterId: string }) {
           audienceCount={selectedAudience.length}
           onEdit={() => setStep('compose')}
           onSend={async () => {
+            if (!emailId) return
             try {
-              // Send email logic here
+              setIsLoading(true)
+              await sendEmail(emailId)
               setStatus('success')
               setStep('status')
+              toast.success('Email sent successfully')
             } catch (error) {
               setStatus('error')
               setStep('status')
+              toast.error('Failed to send email')
+              console.error(error)
+            } finally {
+              setIsLoading(false)
             }
           }}
           onBack={() => setStep('audience')}

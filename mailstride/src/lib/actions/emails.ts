@@ -4,6 +4,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/prisma"
 import { EmailStatus, AudienceType } from "@prisma/client"
 import { revalidatePath } from "next/cache"
+import { sendEmailToList } from "@/lib/email/send"
 
 interface CreateDraftEmailParams {
   subject: string
@@ -19,9 +20,7 @@ export async function createDraftEmail({
   newsletterId
 }: CreateDraftEmailParams) {
   const session = await auth()
-  if (!session?.user?.id) {
-    throw new Error("Not authenticated")
-  }
+  if (!session?.user?.id) throw new Error("Not authenticated")
 
   try {
     const email = await prisma.email.create({
@@ -44,7 +43,8 @@ export async function createDraftEmail({
         }
       },
       include: {
-        analytics: true
+        analytics: true,
+        newsletter: true
       }
     })
 
@@ -58,9 +58,7 @@ export async function createDraftEmail({
 
 export async function updateEmailAudience(emailId: string, audience: string[]) {
   const session = await auth()
-  if (!session?.user?.id) {
-    throw new Error("Not authenticated")
-  }
+  if (!session?.user?.id) throw new Error("Not authenticated")
 
   try {
     const email = await prisma.email.update({
@@ -72,6 +70,10 @@ export async function updateEmailAudience(emailId: string, audience: string[]) {
             emailList: audience
           }
         }
+      },
+      include: {
+        audience: true,
+        newsletter: true
       }
     })
 
@@ -85,11 +87,10 @@ export async function updateEmailAudience(emailId: string, audience: string[]) {
 
 export async function sendEmail(emailId: string) {
   const session = await auth()
-  if (!session?.user?.id) {
-    throw new Error("Not authenticated")
-  }
+  if (!session?.user?.id) throw new Error("Not authenticated")
 
   try {
+    // First update email status to sending
     const email = await prisma.email.update({
       where: { id: emailId },
       data: {
@@ -106,12 +107,33 @@ export async function sendEmail(emailId: string) {
       }
     })
 
-    // Queue the email for sending (implement this based on your email service)
-    // await queueEmail(email)
+    // Send the emails
+    await sendEmailToList({
+      subject: email.subject,
+      content: email.content,
+      recipients: email.audience?.emailList || [],
+      from: `${email.newsletter.publication.name} <noreply@yourdomain.com>`
+    })
+
+    // Update status to sent
+    await prisma.email.update({
+      where: { id: emailId },
+      data: {
+        status: EmailStatus.SENT
+      }
+    })
 
     revalidatePath('/dashboard')
     return email
   } catch (error) {
+    // Update status to failed if there's an error
+    await prisma.email.update({
+      where: { id: emailId },
+      data: {
+        status: EmailStatus.FAILED
+      }
+    })
+    
     console.error('Failed to send email:', error)
     throw error
   }
