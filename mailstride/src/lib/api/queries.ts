@@ -2,6 +2,7 @@
 
 import { prisma } from "@/prisma"
 import { auth } from "@/auth"
+import { Email } from "@prisma/client"
 
 export async function getDashboardStats() {
   const session = await auth()
@@ -22,10 +23,10 @@ export async function getDashboardStats() {
   })
 
   // Calculate total stats across all publications
-  const stats = publications.reduce((acc, pub) => {
+  const stats = publications.reduce((acc, pub: any) => {
     acc.totalSubscribers += pub._count.subscribers
     
-    pub.emails.forEach(email => {
+    pub.emails.forEach((email: {analytics: any}) => {
       if (email.analytics) {
         acc.totalOpens += email.analytics.opens
         acc.totalClicks += email.analytics.clicks
