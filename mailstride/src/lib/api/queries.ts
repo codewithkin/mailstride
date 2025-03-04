@@ -8,8 +8,10 @@ export async function getDashboardStats() {
   const session = await auth()
   if (!session?.user?.id) return null
 
+  const userId = session?.user?.id;
+
   const publications = await prisma.publication.findMany({
-    where: { ownerId: session.user.id },
+    where: { ownerId: userId },
     include: {
       _count: {
         select: { subscribers: true }
@@ -40,10 +42,23 @@ export async function getDashboardStats() {
     totalClicks: 0
   })
 
+  const newsLetters = await prisma.newsletter.findMany({
+    where: {
+      publication: {
+        ownerId: userId
+      }
+    },
+    include: {
+      emails: {
+        include: {
+          analytics: true
+        }
+      }
+    }
+  });
+
   // Calculate rates
-  const openRate = pub.emails.length > 0 
-    ? (stats.totalOpens / (pub.emails.length * stats.totalSubscribers) * 100).toFixed(1)
-    : 0
+  const openRate = 0;
 
   const clickRate = stats.totalOpens > 0
     ? (stats.totalClicks / stats.totalOpens * 100).toFixed(1)
