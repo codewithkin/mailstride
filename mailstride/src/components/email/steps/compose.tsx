@@ -75,7 +75,7 @@ export function ComposeStep({ initialData, onNext }: ComposeStepProps) {
               <span>Saving...</span>
             </div>
           ) : (
-            'Continue to Audience Selection'
+            'Next'
           )}
         </Button>
       </div>

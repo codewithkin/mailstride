@@ -50,6 +50,12 @@ export function AudienceStep({ newsletterId, onNext, onBack }: AudienceStepProps
     onNext(emails)
   }
 
+  const handleNext = () => {
+    if (subscribers) {
+      onNext(subscribers.map(sub => sub.email))
+    }
+  }
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="all" className="w-full">
@@ -117,8 +123,9 @@ export function AudienceStep({ newsletterId, onNext, onBack }: AudienceStepProps
       <div className="flex justify-between">
         <Button variant="outline" onClick={onBack}>
           <ArrowLeftIcon className="h-4 w-4 mr-2" />
-          Back to Editor
+          Back
         </Button>
+        <Button onClick={handleNext}>Next</Button>
       </div>
     </div>
   )
