@@ -8,14 +8,15 @@ export async function getDashboardStats() {
   if (!session?.user?.id) return null
 
   const publications = await prisma.publication.findMany({
-    where: { userId: session.user.id },
+    where: { ownerId: session.user.id },
     include: {
       _count: {
         select: { subscribers: true }
       },
-      emails: {
-        where: { status: 'SENT' },
-        include: { analytics: true }
+      newsletters: {
+        include: {
+          emails: true
+        }
       }
     }
   })
@@ -58,10 +59,15 @@ export async function getRecentEmails() {
   const session = await auth()
   if (!session?.user?.id) return []
 
+  const userId = session?.user?.id;
+
   return prisma.email.findMany({
     where: {
-      publication: { userId: session.user.id },
-      status: 'SENT'
+      newsletter: {
+        publication: {
+          ownerId: userId
+        }
+      }
     },
     include: {
       analytics: true
