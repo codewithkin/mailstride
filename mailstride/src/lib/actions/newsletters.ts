@@ -171,4 +171,74 @@ export async function getNewsletterSubscribers(newsletterId: string) {
     console.error('Failed to fetch subscribers:', error)
     return []
   }
+}
+
+export async function getNewsletter(id: string) {
+  try {
+    return await prisma.newsletter.findUnique({
+      where: { id },
+      include: {
+        publication: true
+      }
+    })
+  } catch (error) {
+    console.error('Failed to fetch newsletter:', error)
+    return null
+  }
+}
+
+export async function subscribeToNewsletter(newsletterId: string, prevState: any, formData: FormData) {
+  try {
+    const email = formData.get('email') as string
+    const firstName = formData.get('firstName') as string
+    const lastName = formData.get('lastName') as string
+
+    if (!email) {
+      return {
+        success: false,
+        message: 'Email is required'
+      }
+    }
+
+    const newsletter = await prisma.newsletter.findUnique({
+      where: { id: newsletterId },
+      include: {
+        publication: true
+      }
+    })
+
+    if (!newsletter) {
+      return {
+        success: false,
+        message: 'Newsletter not found'
+      }
+    }
+
+    await prisma.subscriber.create({
+      data: {
+        email,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        subscribed: true,
+        publicationId: newsletter.publicationId,
+        newsletters: {
+          connect: { id: newsletterId }
+        }
+      }
+    })
+
+    // Here you could also send a welcome email
+    // await sendWelcomeEmail({ email, newsletterName: newsletter.name })
+
+    return {
+      success: true,
+      message: 'Successfully subscribed'
+    }
+  } catch (error) {
+    console.error('Failed to subscribe:', error)
+    return {
+      success: false,
+      message: 'Failed to subscribe. Please try again.'
+    }
+  }
 } 

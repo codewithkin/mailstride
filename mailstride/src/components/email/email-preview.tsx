@@ -20,6 +20,7 @@ interface EmailPreviewProps {
   onEdit: () => void
   onSend: () => Promise<void>
   onBack: () => void
+  isLoading: boolean
 }
 
 export function EmailPreview({ 
@@ -27,7 +28,8 @@ export function EmailPreview({
   audienceCount, 
   onEdit, 
   onSend, 
-  onBack 
+  onBack,
+  isLoading 
 }: EmailPreviewProps) {
   const [isSending, setIsSending] = useState(false)
 
@@ -72,17 +74,17 @@ export function EmailPreview({
       </div>
 
       <div className="flex justify-between">
-        <Button variant="outline" onClick={onBack}>
+        <Button variant="outline" onClick={onBack} disabled={isLoading}>
           <ArrowLeftIcon className="h-4 w-4 mr-2" />
-          Back to Audience
+          Back
         </Button>
 
         <Button
-          onClick={handleSend}
-          disabled={isSending}
+          onClick={onSend}
+          disabled={isLoading}
           className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
         >
-          {isSending ? (
+          {isLoading ? (
             <div className="flex items-center gap-2">
               <LoadingSpinner />
               <span>Sending...</span>
@@ -90,7 +92,7 @@ export function EmailPreview({
           ) : (
             <>
               <EnvelopeIcon className="h-4 w-4 mr-2" />
-              Send Email
+              Send
             </>
           )}
         </Button>

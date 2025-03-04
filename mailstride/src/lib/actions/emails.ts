@@ -107,12 +107,16 @@ export async function sendEmail(emailId: string) {
       }
     })
 
+    if (!email.audience?.emailList?.length) {
+      throw new Error('No recipients specified')
+    }
+
     // Send the emails
     await sendEmailToList({
       subject: email.subject,
       content: email.content,
-      recipients: email.audience?.emailList || [],
-      from: `${email.newsletter.publication.name} <noreply@yourdomain.com>`
+      recipients: email.audience.emailList,
+      from: `${email.newsletter.publication.name} <onboarding@resend.dev>` // Use Resend's default sender for now
     })
 
     // Update status to sent
@@ -135,7 +139,7 @@ export async function sendEmail(emailId: string) {
     })
     
     console.error('Failed to send email:', error)
-    throw error
+    throw new Error(error instanceof Error ? error.message : 'Failed to send email')
   }
 }
 
