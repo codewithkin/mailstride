@@ -72,7 +72,7 @@ export function PreviewStep({
       <div className="flex justify-between">
         <Button variant="outline" onClick={onBack}>
           <ArrowLeftIcon className="h-4 w-4 mr-2" />
-          Back to Audience
+          Back
         </Button>
 
         <Button
@@ -88,7 +88,7 @@ export function PreviewStep({
           ) : (
             <>
               <EnvelopeIcon className="h-4 w-4 mr-2" />
-              Send Email
+              Send
             </>
           )}
         </Button>

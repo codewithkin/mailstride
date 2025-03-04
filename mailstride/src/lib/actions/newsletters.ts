@@ -156,8 +156,12 @@ export async function getNewsletterSubscribers(newsletterId: string) {
       where: { id: newsletterId },
       include: {
         subscribers: {
-          where: { status: 'ACTIVE' },
-          orderBy: { createdAt: 'desc' }
+          where: { 
+            subscribed: true
+          },
+          orderBy: { 
+            createdAt: 'desc' 
+          }
         }
       }
     })

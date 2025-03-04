@@ -91,7 +91,7 @@ export function EmailEditor({ initialData, onSave }: EmailEditorProps) {
               <span>Saving...</span>
             </div>
           ) : (
-            'Continue to Audience Selection'
+            'Next'
           )}
         </Button>
       </div>

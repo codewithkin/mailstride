@@ -177,17 +177,18 @@ model OpenEvent {
 }
 
 model Subscriber {
-  id          String   @id @default(cuid())
-  email       String
-  name        String?
-  metadata    Json?    // For custom fields
-  subscribed  Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  email         String
+  name          String?
+  metadata      Json?    
+  subscribed    Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relations
   publicationId String
   publication  Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  newsletters  Newsletter[]
   clickEvents  ClickEvent[]
   openEvents   OpenEvent[]
   tags         Tag[]
@@ -306,17 +307,18 @@ model PublicationMember {
 
 // Add this model to your schema
 model Newsletter {
-  id          String   @id @default(cuid())
-  name        String
-  status      EmailStatus @default(DRAFT)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  status        EmailStatus @default(DRAFT)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relations
   publicationId String
   publication  Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
-  emails      Email[]
-  analytics   NewsletterAnalytics?
+  emails       Email[]
+  analytics    NewsletterAnalytics?
+  subscribers  Subscriber[]
 
   @@index([publicationId])
   @@index([status])
