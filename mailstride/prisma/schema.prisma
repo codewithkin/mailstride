@@ -89,37 +89,55 @@ model Email {
   scheduledFor  DateTime?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+  audience      EmailAudience?
 
   // Relations
   newsletterId  String
   newsletter    Newsletter  @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
   analytics     EmailAnalytics?
-  automationEmails AutomationEmail[]
 
   @@index([newsletterId])
   @@index([status])
-  @@index([scheduledFor])
-  @@index([sentAt])
+}
+
+model EmailAudience {
+  id            String    @id @default(cuid())
+  type          AudienceType
+  emailList     String[]  // Array of email addresses
+  segment       Json?     // For storing segment criteria
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  emailId       String    @unique
+  email         Email     @relation(fields: [emailId], references: [id], onDelete: Cascade)
+
+  @@index([type])
+}
+
+enum AudienceType {
+  ALL_SUBSCRIBERS
+  MANUAL_LIST
+  CSV_IMPORT
+  SEGMENT
 }
 
 model EmailAnalytics {
-  id          String   @id @default(cuid())
-  opens       Int      @default(0)
-  uniqueOpens Int      @default(0)
-  clicks      Int      @default(0)
-  uniqueClicks Int     @default(0)
-  bounces     Int      @default(0)
-  unsubscribes Int     @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String    @id @default(cuid())
+  opens         Int       @default(0)
+  uniqueOpens   Int       @default(0)
+  clicks        Int       @default(0)
+  uniqueClicks  Int       @default(0)
+  bounces       Int       @default(0)
+  complaints    Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // Relations
-  emailId     String   @unique
-  email       Email    @relation(fields: [emailId], references: [id], onDelete: Cascade)
-  clickEvents ClickEvent[]
-  openEvents  OpenEvent[]
+  emailId       String    @unique
+  email         Email     @relation(fields: [emailId], references: [id], onDelete: Cascade)
 
-  @@index([createdAt])
+  @@index([emailId])
 }
 
 model ClickEvent {
