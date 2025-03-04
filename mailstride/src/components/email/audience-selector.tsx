@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import { useDropzone } from 'react-dropzone'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -13,7 +14,9 @@ import {
   UserPlusIcon, 
   TableCellsIcon,
   AdjustmentsHorizontalIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  CloudArrowUpIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline'
 import { getNewsletterSubscribers } from '@/lib/actions/newsletters'
 
@@ -27,10 +30,30 @@ export function AudienceSelector({ newsletterId, onSelect, onBack }: AudienceSel
   const [selectedEmails, setSelectedEmails] = useState<string[]>([])
   const [manualEmails, setManualEmails] = useState('')
   const [file, setFile] = useState<File | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   const { data: subscribers, isLoading } = useQuery({
     queryKey: ['newsletter-subscribers', newsletterId],
     queryFn: () => getNewsletterSubscribers(newsletterId)
+  })
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    setUploadError(null)
+    const file = acceptedFiles[0]
+    if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+      setUploadError('Please upload a CSV file')
+      return
+    }
+    setFile(file)
+  }, [])
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'text/csv': ['.csv']
+    },
+    maxFiles: 1,
+    multiple: false
   })
 
   const handleAllSubscribers = () => {
@@ -143,17 +166,65 @@ export function AudienceSelector({ newsletterId, onSelect, onBack }: AudienceSel
 
           <TabsContent value="csv" className="m-0">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
-              <div>
-                <Label>Upload CSV File</Label>
-                <Input
-                  type="file"
-                  accept=".csv"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  className="mt-1"
-                />
+              <div
+                {...getRootProps()}
+                className={`
+                  border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
+                  transition-colors duration-200
+                  ${isDragActive 
+                    ? 'border-indigo-500 bg-indigo-50' 
+                    : 'border-gray-300 hover:border-gray-400'
+                  }
+                `}
+              >
+                <input {...getInputProps()} />
+                <div className="space-y-4">
+                  <div className="mx-auto w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center">
+                    <CloudArrowUpIcon className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  {file ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-sm font-medium text-gray-900">
+                          {file.name}
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setFile(null)
+                          }}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          <XMarkIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Click to replace or drag and drop a new file
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-gray-900">
+                        Drop your CSV file here, or click to browse
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Your CSV should have email addresses in the first column
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
-              <Button onClick={handleCsvUpload} disabled={!file}>
-                Upload and Continue
+
+              {uploadError && (
+                <p className="text-sm text-red-600 mt-2">{uploadError}</p>
+              )}
+
+              <Button 
+                onClick={handleCsvUpload} 
+                disabled={!file}
+                className="w-full"
+              >
+                {file ? 'Upload and Continue' : 'Select a CSV File'}
               </Button>
             </div>
           </TabsContent>

@@ -10,6 +10,7 @@ import { AudienceStep } from '@/components/email/steps/audience'
 import { PreviewStep } from '@/components/email/steps/preview'
 import { StatusStep } from '@/components/email/steps/status'
 import { CheckIcon } from '@heroicons/react/24/outline'
+import { createDraftEmail, updateEmailAudience, sendEmail } from '@/lib/actions/emails'
 
 type Step = 'compose' | 'audience' | 'preview' | 'status'
 
@@ -25,6 +26,7 @@ export default function CreateEmailPage() {
   const newsletterId = params.newsletterId as string
   
   const [step, setStep] = useState<Step>('compose')
+  const [emailId, setEmailId] = useState<string | null>(null)
   const [emailData, setEmailData] = useState({
     subject: '',
     content: '',
@@ -41,9 +43,19 @@ export default function CreateEmailPage() {
       component: (
         <ComposeStep
           initialData={emailData}
-          onNext={(data) => {
-            setEmailData(data)
-            setStep('audience')
+          onNext={async (data) => {
+            try {
+              const email = await createDraftEmail({
+                ...data,
+                newsletterId
+              })
+              setEmailId(email.id)
+              setEmailData(data)
+              setStep('audience')
+            } catch (error) {
+              console.error('Failed to create email:', error)
+              // Handle error (show toast, etc.)
+            }
           }}
         />
       )
@@ -53,9 +65,16 @@ export default function CreateEmailPage() {
       component: (
         <AudienceStep
           newsletterId={newsletterId}
-          onNext={(audience) => {
-            setSelectedAudience(audience)
-            setStep('preview')
+          onNext={async (audience) => {
+            if (!emailId) return
+            try {
+              await updateEmailAudience(emailId, audience)
+              setSelectedAudience(audience)
+              setStep('preview')
+            } catch (error) {
+              console.error('Failed to update audience:', error)
+              // Handle error
+            }
           }}
           onBack={() => setStep('compose')}
         />
@@ -68,11 +87,13 @@ export default function CreateEmailPage() {
           emailData={emailData}
           audienceCount={selectedAudience.length}
           onSend={async () => {
+            if (!emailId) return
             try {
-              // Send email logic here
+              await sendEmail(emailId)
               setStatus('success')
               setStep('status')
             } catch (error) {
+              console.error('Failed to send email:', error)
               setStatus('error')
               setStep('status')
             }
