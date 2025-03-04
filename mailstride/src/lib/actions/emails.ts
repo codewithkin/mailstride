@@ -1,9 +1,10 @@
-'use server'
+'use client'
 
 import { auth } from "@/auth"
 import { prisma } from "@/prisma"
 import { EmailStatus, AudienceType } from "@prisma/client"
 import { revalidatePath } from "next/cache"
+import { queueEmail } from "@/lib/queue/email"
 
 interface SendEmailParams {
   subject: string
@@ -50,11 +51,18 @@ export async function sendEmail({
             complaints: 0
           }
         }
+      },
+      include: {
+        newsletter: {
+          include: {
+            publication: true
+          }
+        }
       }
     })
 
     // Queue the email for sending
-    await queueEmailForSending(email.id)
+    await queueEmail(email.id)
 
     revalidatePath('/dashboard')
     return { success: true, emailId: email.id }
@@ -64,8 +72,36 @@ export async function sendEmail({
   }
 }
 
-async function queueEmailForSending(emailId: string) {
-  // TODO: Implement email queueing logic
-  // This will be implemented when we set up the SMTP server
-  return true
+export async function getNewsletterEmails(newsletterId: string) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    throw new Error("Not authenticated")
+  }
+
+  return prisma.email.findMany({
+    where: {
+      newsletterId,
+      newsletter: {
+        publication: {
+          OR: [
+            { ownerId: session.user.id },
+            {
+              members: {
+                some: {
+                  userId: session.user.id
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    include: {
+      analytics: true,
+      audience: true
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  })
 } 

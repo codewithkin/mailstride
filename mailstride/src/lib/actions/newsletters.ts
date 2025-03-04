@@ -39,14 +39,16 @@ export async function createNewsletter(formData: FormData) {
   }
 }
 
-export async function getUserNewsletters(publicationId: string) {
+export async function getUserNewsletters() {
   const session = await auth()
-  if (!session?.user?.id) return []
+  if (!session?.user?.id) throw new Error("User not logged in");
 
   try {
     const newsletters = await prisma.newsletter.findMany({
       where: {
-        publicationId
+        publication: {
+          ownerId: session.user.id
+        }
       },
       include: {
         emails: {
