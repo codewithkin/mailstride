@@ -27,7 +27,7 @@ export async function createDraftEmail({
       data: {
         subject,
         content,
-        design,
+        design: design ? JSON.stringify(design) : null,
         status: EmailStatus.DRAFT,
         newsletterId,
         analytics: {
